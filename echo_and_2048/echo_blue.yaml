@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-blue
+spec:
+  selector:
+    matchLabels:
+      app: echo-blue
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: echo-blue
+    spec:
+      containers:
+        - name: app
+          image: 970805265562.dkr.ecr.us-west-2.amazonaws.com/colorteller:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: COLOR
+              value: '<html style="background-color: blue;"></html>'
+            - name: SERVER_PORT
+              value: "8080"
+          resources:
+            limits:
+              cpu: 200m
+              memory: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-blue
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  type: NodePort
+  selector:
+    app: echo-blue
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: echo-blue
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/group.name: my-another-group
+    alb.ingress.kubernetes.io/group.order: "2"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /blue
+            backend:
+              serviceName: echo-blue
+              servicePort: 80
+          - path: /color
+            backend:
+              serviceName: echo-blue
+              servicePort: 80

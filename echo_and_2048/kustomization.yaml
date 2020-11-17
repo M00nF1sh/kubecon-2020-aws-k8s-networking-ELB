@@ -1,0 +1,6 @@
+namespace: container-demo
+resources:
+  - namespace.yaml
+  - echo_blue.yaml
+  - echo_red.yaml
+  - game_2048.yaml
